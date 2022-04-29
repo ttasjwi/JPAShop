@@ -2,6 +2,8 @@ package jpa.book.JPAShop.domain;
 
 import javax.persistence.*;
 
+import static javax.persistence.FetchType.*;
+
 @Entity
 public class Delivery {
 
@@ -10,7 +12,7 @@ public class Delivery {
     @Column(name = "delivery_id")
     private Long id;
 
-    @OneToOne(mappedBy = "delivery")
+    @One(mappedBy = "delivery", fetch = LAZY)
     private Order order;
 
     @Embedded
