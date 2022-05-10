@@ -4,12 +4,12 @@
 
 ---
 
-## 프로젝트 초기 설정
+# 프로젝트 초기 설정
 <details>
 <summary>접기/펼치기 버튼</summary>
 <div markdown="1">
 
-### 의존 라이브러리
+## 의존 라이브러리
 ```groovy
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -35,7 +35,7 @@ dependencies {
 - `p6spy` : 쿼리 로그
 - `lombok` : 각종 편의 어노테이션
 
-### application.yml
+## application.yml
 ```yaml
 spring:
   datasource: # 데이터 소스
@@ -68,9 +68,13 @@ logging:
 
 ---
 
-## 회원 도메인 개발
+# 회원 도메인 개발
 
-### MemberRepository
+## MemberRepository
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
 ```java
 @Repository
 public class MemberRepository {
@@ -94,7 +98,14 @@ public class MemberRepository {
   - findAll : 회원 전체 조회
   - findByName : 이름으로 회원 조회
 
-### MemberService
+</div>
+</details>
+
+## MemberService
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
 ```java
 @Service
 @RequiredArgsConstructor
@@ -118,5 +129,49 @@ public class MemberService {
     - 데이터의 변경이 없는 읽기 전용 메서드에 사용. 영속성 컨텍스트를 플러시하지 않으므로 약간 성능 향상(읽기 전용에는 다 적용)
   - 데이터베이스 드라이버가 지원하면 DB에서는 성능 향상
 
----
+</div>
+</details>
 
+## MemberServiceTest
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+```java
+@SpringBootTest
+@Transactional
+class MemberServiceTest {
+```
+- `@SpringBootTest` : 스프링부트 연동 테스트
+- `@Transactional` : 테스트 종료 후 롤백
+  - 롤백시키고 싶지 않으면 메서드에 `@RollBack(false)` 넣어주기
+```yaml
+#spring:
+#  datasource: # 데이터 소스
+#    url: jdbc:h2:mem:test # 스프링부트는 기본적으로 인메모리 테스트 DB를 사용
+#    username: sa
+#    password:
+#    driver-class-name: org.h2.Driver
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: create-drop # 애플리케이션 실행 시점에 테이블을 drop하고, 다시 생성한 뒤 종료시점에 drop (테스트 - 스프링부트 디폴트)
+#    properties:
+#      hibernate:
+##        show_sql: true # sout으로 하이버네이트 실행 SQL을 남기는 것인데, 후술할 logging으로 대체한다.
+#        format_sql: true # 보여지는 쿼리를 예쁘게 보여줌
+
+logging:
+  level:
+    org.hibernate.SQL: debug # 하이버네이트 실행 SQL을 logger을 통해 남긴다.
+#    org.hibernate.type: trace  # 쿼리 parameter의 값을 로그로 남김. 배포환경에서는 사용하지 성능 상 문제가 있다면 사용할지 말지를 고민하는 것이 좋다.
+```
+- 인 메모리 테스트
+  - `test/resources/application.yml`를 우선적으로 읽음.
+    - 스프링은 디폴트로 인메모리 db를 사용
+    - ddl-auto : create-drop을 기본 옵션으로 사용(drop - create - drop)
+
+</div>
+</details>
+
+---
