@@ -212,4 +212,27 @@ logging:
 </div>
 </details>
 
+## ItemRepository
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+```java
+    public void save(Item item) {
+        if (item.getId() == null) {
+            em.persist(item);
+        } else {
+            em.merge(item);
+        }
+    }
+```
+- save
+  - id가 없음 : 신규 상품
+  - id가 있음 : 갱신?
+- findOne : 단건 조회
+- findAll : 전체 조회
+
+</div>
+</details>
+
 ---
