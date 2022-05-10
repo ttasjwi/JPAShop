@@ -16,7 +16,7 @@ import static javax.persistence.FetchType.*;
 @Getter @Setter
 public class Order {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
     private Long id;
 

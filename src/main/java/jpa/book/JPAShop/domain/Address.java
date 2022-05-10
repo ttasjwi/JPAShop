@@ -1,5 +1,6 @@
 package jpa.book.JPAShop.domain;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import javax.persistence.Embeddable;
