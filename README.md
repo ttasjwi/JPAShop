@@ -235,4 +235,30 @@ logging:
 </div>
 </details>
 
+## ItemService
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+```java
+    private final ItemRepository itemRepository;
+
+    @Transactional
+    public void saveItem(Item item) {
+        itemRepository.save(item);
+    }
+
+    public Item findOne(Long itemId) {
+        return itemRepository.findOne(itemId);
+    }
+
+    public List<Item> findItems() {
+        return itemRepository.findAll();
+    }
+```
+- 단순히 Repository에 위임
+
+</div>
+</details>
+
 ---
