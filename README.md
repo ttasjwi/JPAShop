@@ -70,7 +70,7 @@ logging:
 
 ## 회원 도메인 개발
 
-### Repository
+### MemberRepository
 ```java
 @Repository
 public class MemberRepository {
@@ -78,13 +78,45 @@ public class MemberRepository {
     @PersistenceContext
     private EntityManager em;
 ```
+```java
+@Repository
+@RequiredArgsConstructor
+public class MemberRepository {
+
+    private final EntityManager em;
+```
 - `@Repository` : 스프링 빈으로 Repository 등록
 - `@PersistenceContext` : 엔티티매니저 자동 주입
+- 스프링데이터 JPA를 사용하면 EntityManager도 자동 의존관계주입 가능
 - 기능
   - save : 회원 저장
   - findOne : 회원 조회(id로 단건 조회)
   - findAll : 회원 전체 조회
   - findByName : 이름으로 회원 조회
+
+### MemberService
+```java
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true) // 읽기 전용
+public class MemberService {
+
+    private final MemberRepository memberRepository;
+
+    /**
+     * 회원 가입
+     */
+    @Transactional // 변경
+    public Long join(Member member) {
+        validateDuplicateMember(member);
+        memberRepository.save(member);
+        return member.getId();
+    }
+```
+- `@Transactional` : 트랜잭션, 영속성 컨텍스트. `readOnly = false`가 디폴트
+  - `readOnly=true`
+    - 데이터의 변경이 없는 읽기 전용 메서드에 사용. 영속성 컨텍스트를 플러시하지 않으므로 약간 성능 향상(읽기 전용에는 다 적용)
+  - 데이터베이스 드라이버가 지원하면 DB에서는 성능 향상
 
 ---
 
