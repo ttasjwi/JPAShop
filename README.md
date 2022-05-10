@@ -352,4 +352,36 @@ public int getTotalPrice() {
 </div>
 </details>
 
+## OrderRepository
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+```java
+@Repository
+@RequiredArgsConstructor
+public class OrderRepository {
+    
+    private final EntityManager em;
+    
+    public void save(Order order) {
+        em.persist(order);
+    }
+    
+    public Order findOne(Long id) {
+        return em.find(Order.class, id);
+    }
+    
+    //TODO
+    // public List<Order> findAll(OrderSearch orderSearch) {}
+    
+}
+```
+- 주문 등록
+- 주문 단건 조회
+- TODO : 주문목록 필터링 조회
+
+</div>
+</details>
+
 ---
