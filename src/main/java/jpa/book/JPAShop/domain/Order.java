@@ -1,6 +1,8 @@
 package jpa.book.JPAShop.domain;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -12,6 +14,7 @@ import static javax.persistence.FetchType.LAZY;
 
 @Entity
 @Table(name="orders")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter @Setter
 public class Order {
 
@@ -70,7 +73,7 @@ public class Order {
     /**
      * 주문 취소
      */
-    public void cancleOrder() {
+    public void cancelOrder() {
         if (delivery.getStatus() == DeliveryStatus.COMP) {
             throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
         }

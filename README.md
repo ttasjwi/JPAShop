@@ -384,4 +384,57 @@ public class OrderRepository {
 </div>
 </details>
 
+## OrderService
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+### 주문 생성
+```java
+    @Transactional
+    public Long order(Long memberId, Long itemId, int count) {
+
+        // 엔티티 조회
+        Member member = memberRepository.findOne(memberId);
+        Item item = itemRepository.findOne(itemId);
+
+        // 배송정보 생성
+        Delivery delivery = new Delivery();
+        delivery.setAddress(member.getAddress());
+        delivery.setStatus(DeliveryStatus.READY);
+
+        // 주문상품 생성
+        OrderItem orderItem = OrderItem.createOrderItem(item, item.getPrice(), count);
+
+        // 주문 생성
+        Order order = Order.createOrder(member, delivery, orderItem);
+
+        // 주문 저장
+        orderRepository.save(order);
+        return order.getId();
+    }
+```
+### 주문 취소
+```java
+@Transactional
+public void cancelOrder(Long orderId) {
+
+    // 주문 엔티티 조회
+    Order order = orderRepository.findOne(orderId);
+
+    // 주문 취소
+    order.cancelOrder();
+}
+```
+- 도메인 모델 패턴 : 엔티티가 비즈니스 로직을 가지고, 객체 지향의 특성을 적극 활용하는 것 
+  - 비즈니스 로직 대부분이 '도메인'에 있음.
+  - 서비스 계층은 단순히 엔티티에 필요한 요청을 위임하는 역할
+- 트랜잭션 스크립트 패턴 : 엔티티에 비즈니스 로직이 거의 없고, 서비스 계층에서 대부분의 비즈니스 로직을 처리
+- 우열을 가릴 수 없고 실무에서는 양쪽을 모두 쓴다고는 함.
+  - JPA 위주 개발의 경우 주로 도메인 모델 패턴
+  - JdbcTemplate, MyBatis 위주 개발의 경우 주로 트랜잭션 스크립트 패턴
+
+</div>
+</details>
+
 ---
