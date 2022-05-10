@@ -437,4 +437,32 @@ public void cancelOrder(Long orderId) {
 </div>
 </details>
 
+## OrderServiceTest
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+```java
+@SpringBootTest
+@Transactional
+class OrderServiceTest {
+
+    @Autowired
+    private EntityManager em;
+
+    @Autowired
+    private OrderService orderService;
+
+    @Autowired
+    private OrderRepository orderRepository;
+```
+- 단순히 order 생성에 필요한 member, item은 em을 통해 가져오도록 함
+- 서비스 로직 하나를 테스트하기 위해 DB까지 연동해서 갖고오는 관점에선 좋은 테스트가 아님. 단위 테스트를 지향하자.
+  - 도메인 따로.
+  - 레포지토리 따로.
+  - 독립적으로 서비스 따로.
+
+</div>
+</details>
+
 ---
