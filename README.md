@@ -175,3 +175,41 @@ logging:
 </details>
 
 ---
+
+# 상품 도메인 개발
+
+## Item
+
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+```java
+    //== 비즈니스 로직 ==/
+
+    /**
+     * stock 증가
+     */
+    public void addStockQuantity(int quantity) {
+        this.stockQuantity += quantity;
+    }
+
+    /**
+     * stock 감소
+     */
+    public void removeStock(int quantity) {
+        int restStock = this.stockQuantity - quantity;
+
+        if (restStock < 0) {
+            throw new NotEnoughStockException("Need More Stock");
+        }
+        this.stockQuantity = restStock;
+    }
+```
+- Item에 관한 비즈니스 로직은 Item 스스로가 책임질 수 있어야한다.
+- Item의 상태 변화는 setter를 사용하기보다 의미있는 메서드를 작성하는 것이 객체지향적이다.
+
+</div>
+</details>
+
+---
