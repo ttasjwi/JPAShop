@@ -262,3 +262,94 @@ logging:
 </details>
 
 ---
+
+# 주문 도메인 개발
+
+## Order, OrderItem
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+### Order, OrderItem 생성 로직
+```java
+//== 생성 메서드 ==//
+public static Order createOrder(Member member, Delivery delivery, OrderItem... orderItems) {
+    Order order = new Order();
+    order.setMember(member);
+    order.setDelivery(delivery);
+
+    for (OrderItem orderItem : orderItems) {
+        order.addOrderItem(orderItem);
+    }
+    order.setStatus(OrderStatus.ORDER);
+    order.setOrderDate(LocalDateTime.now());
+    return order;
+}
+```
+```java
+//== 생성 메서드 ==//
+public static OrderItem createOrderItem(Item item, int orderPrice, int count) {
+    OrderItem orderItem = new OrderItem();
+    orderItem.setItem(item);
+    orderItem.setOrderPrice(orderPrice);
+    orderItem.setCount(count);
+
+    item.removeStock(count);
+    return orderItem;
+}
+```
+- 생성이 복잡한 클래스는 별도로 static 메서드로 생성
+- 주문시 item의 상태도 변경된다.
+  - item의 상태 변화가 의미있는 메서드로 정의되어 있어서, 관계 확인이 편리하다.
+
+### Order, OrderItem 비즈니스 로직
+```java
+//== 비즈니스 로직 ==//
+
+/**
+ * 주문 취소
+ */
+public void cancleOrder() {
+    if (delivery.getStatus() == DeliveryStatus.COMP) {
+        throw new IllegalStateException("이미 배송완료된 상품은 취소가 불가능합니다.");
+    }
+    this.setStatus(OrderStatus.CANCEL);
+
+    for (OrderItem orderItem : orderItems) {
+        orderItem.cancel();
+    }
+}
+
+/**
+ * 전체 주문가격 조회
+ */
+public int getTotalPrice() {
+    return orderItems.stream()
+            .mapToInt(OrderItem::getTotalPrice)
+            .sum();
+}
+```
+```java
+//== 비즈니스 로직 ==//
+
+/**
+ * 주문 취소
+ */
+public void cancel() {
+    getItem().addStockQuantity(count);
+}
+
+/**
+ * 주문상품 전체 가격 조회
+ */
+public int getTotalPrice() {
+    return getOrderPrice() * getCount();
+}
+```
+- 주문 취소
+- 주문 가격 조회
+
+</div>
+</details>
+
+---
