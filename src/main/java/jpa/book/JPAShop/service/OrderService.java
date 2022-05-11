@@ -1,5 +1,6 @@
 package jpa.book.JPAShop.service;
 
+import com.sun.xml.bind.v2.TODO;
 import jpa.book.JPAShop.domain.*;
 import jpa.book.JPAShop.domain.item.Item;
 import jpa.book.JPAShop.repository.ItemRepository;
@@ -8,6 +9,8 @@ import jpa.book.JPAShop.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -58,6 +61,10 @@ public class OrderService {
         order.cancelOrder();
     }
 
-    // TODO : 검색
-    // public List<Order> findOrders(OrderSearch orderSearch) {}
+    /**
+     * 주문 검색
+     */
+    public List<Order> findOrders(OrderSearch orderSearch) {
+        return orderRepository.findAllByCriteria(orderSearch);
+    }
 }
