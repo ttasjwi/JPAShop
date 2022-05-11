@@ -504,3 +504,27 @@ class OrderServiceTest {
 </details>
 
 ---
+
+# 회원 웹 계층 개발
+
+```html
+<tr th:each="member : ${members}">
+    <td th:text="${member.id}"></td>
+    <td th:text="${member.name}"></td>
+    <td th:text="${member.address?.city}"></td>
+    <td th:text="${member.address?.street}"></td>
+    <td th:text="${member.address?.zipcode}"></td>
+</tr>
+```
+- `member.address?.city` : ?는 address가 null일 경우 무시하겠다는 뜻.
+
+
+---
+
+# 상품 웹 계층 개발
+
+---
+
+# 주문 웹 계층 개발
+
+---
