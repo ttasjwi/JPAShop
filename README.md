@@ -553,5 +553,16 @@ class OrderServiceTest {
 ---
 
 # 주문 웹 계층 개발
+```java
+    @PostMapping
+    public String order(
+            @RequestParam("memberId") Long memberId,
+            @RequestParam("itemId") Long itemId,
+            @RequestParam("count") int count) {
+        orderService.order(memberId, itemId, count);
+        return "redirect:/";
+    }
+```
+- member, item이 필요한 상황인데, 이들 엔티티 조회는 영속성 컨텍스트 관리 하에서 하는 것이 좋다.
 
 ---
