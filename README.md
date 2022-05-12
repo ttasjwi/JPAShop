@@ -814,4 +814,26 @@ public class SimpleOrderListResponse {
 </div>
 </details>
 
+## 간단한 주문 조회 V3 : 엔티티를 DTO로 변환 - 페치 조인 최적화
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+### OrderRepository
+```java
+public List<Order> findAllWithMemberDelivery() {
+    return em.createQuery(
+                    "SELECT o FROM Order as o " +
+                            "join fetch o.member as m " +
+                            "join fetch o.delivery as d", Order.class
+            )
+            .getResultList();
+}
+```
+- 엔티티를 페치 조인(fetch Join)으로 쿼리 1번에 조회
+- 페치 조인으로 order->member, order->delivery는 한번에 가져와지므로 지연로딩 x
+
+</div>
+</details>
+
 ---

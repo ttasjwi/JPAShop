@@ -40,4 +40,11 @@ public class OrderSimpleApiController {
         return SimpleOrderListResponse.create(orderEntities);
     }
 
+    @GetMapping("/api/v3/simple-orders")
+    public SimpleOrderListResponse ordersV3() {
+        List<Order> orderEntities = orderRepository.findAllWithMemberDelivery();
+        return SimpleOrderListResponse.create(orderEntities);
+    }
+
+
 }
