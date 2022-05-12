@@ -627,6 +627,10 @@ static class CreateMemberRequest {
 </details>
 
 ## 회원 수정 API
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
 ```java
 @PutMapping("/api/v2/members/{id}")
 public UpdateMemberResponse updateMemberV2(
@@ -644,4 +648,28 @@ public UpdateMemberResponse updateMemberV2(
   - 하나의 메서드는 하나의 역할만.
 - 위의 경우에서도, update메서드는 변경만 수행함. 엔티티를 반환하지 않음.
 
+</div>
+</details>
+
+## 회원 목록 API
+
+### 회원 목록 V1 : 응답 값으로 엔티티를 외부에 직접 노출
+```java
+    @GetMapping("/api/v1/members")
+    public List<Member> members() {
+        List<Member> members = memberService.findMembers();
+        return members;
+    }
+```
+- 문제점
+  - 엔티티에 프레젠테이션 계층을 위한 로직이 추가됨
+  - 기본적으로 엔티티의 모든 값이 노출됨
+  - 엔티티에 응답 스펙을 맞추기 위한 로직이 추가됨(`@JsonIgnore`, 별도의 뷰 로직 등...)
+  - 실무에서는 같은 엔티티에 대해 API가 용도에 따라 다양하게 만들어지는데, 한 엔티티에 각각의 API를 위한 프레젠테이션 응답 로직을 담기는 어렵다.
+  - 엔티티가 변경되면 API 스펙이 변한다.
+  - 추가로, 컬렉션을 직접 반환하면 향후 API 스펙을 변경하기 어렵다. (별도의 Result 클래스 생성으로 해결)
+- 결론
+  - API 응답 스펙에 맞추어 별도의 DTO를 생성한다.
+
 ---
+
