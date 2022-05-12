@@ -1,14 +1,12 @@
 package jpa.book.JPAShop.api;
 
-import jpa.book.JPAShop.domain.Address;
+import jpa.book.JPAShop.api.dto.*;
 import jpa.book.JPAShop.domain.Member;
 import jpa.book.JPAShop.service.MemberService;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import java.util.List;
 
 @RestController
@@ -42,65 +40,14 @@ public class MemberApiController {
     }
 
     @GetMapping("/api/v1/members")
-    public List<Member> members() {
+    public List<Member> membersV1() {
         List<Member> members = memberService.findMembers();
         return members;
     }
 
-    @Data
-    static class CreateMemberRequest {
-        @NotEmpty
-        private String name;
-        private String city;
-        private String street;
-        private String zipcode;
-
-        public Member toEntity() {
-            Member member = new Member();
-            member.setName(name);
-            member.setAddress(new Address(city,street, zipcode));
-            return member;
-        }
+    @GetMapping("/api/v2/members")
+    public MemberListResponse membersV2() {
+        List<Member> findMemberEntities = memberService.findMembers();
+        return MemberListResponse.create(findMemberEntities);
     }
-
-    @Data
-    static class CreateMemberResponse {
-        private Long id;
-
-        public CreateMemberResponse(Long id) {
-            this.id = id;
-        }
-    }
-
-    @Data
-    static class UpdateMemberRequest {
-        @NotEmpty
-        private String name;
-        private String city;
-        private String street;
-        private String zipcode;
-
-        public Address getAddress() {
-            return new Address(city, street, zipcode);
-        }
-    }
-
-    @Data
-    static class UpdateMemberResponse {
-
-        private Long id;
-        private String name;
-        private String city;
-        private String street;
-        private String zipcode;
-
-        public UpdateMemberResponse(Member updatedMember) {
-            this.id = updatedMember.getId();
-            this.name = updatedMember.getName();
-            this.city = updatedMember.getAddress().getCity();
-            this.street = updatedMember.getAddress().getStreet();
-            this.zipcode = updatedMember.getAddress().getZipcode();
-        }
-    }
-
 }

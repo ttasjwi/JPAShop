@@ -652,6 +652,10 @@ public UpdateMemberResponse updateMemberV2(
 </details>
 
 ## 회원 목록 API
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
 
 ### 회원 목록 V1 : 응답 값으로 엔티티를 외부에 직접 노출
 ```java
@@ -671,5 +675,36 @@ public UpdateMemberResponse updateMemberV2(
 - 결론
   - API 응답 스펙에 맞추어 별도의 DTO를 생성한다.
 
+## 회원 목록 V2 : 응답 DTO를 별도로 생성하여 반환
+```java
+@GetMapping("/api/v2/members")
+public MemberListResponse membersV2() {
+    List<Member> findMemberEntities = memberService.findMembers();
+    return MemberListResponse.create(findMemberEntities);
+}
+```
+```java
+@Data
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+public class MemberListResponse {
+
+    private final List<MemberListElement> members;
+
+    public static MemberListResponse create(List<Member> memberEntities) {
+        List<MemberListElement> members = memberEntities.stream()
+                .map(MemberListElement::new)
+                .collect(Collectors.toList());
+
+        return new MemberListResponse(members);
+    }
+```
+- 엔티티를 DTO로 변환해서 반환
+- 엔티티가 변해도 API 스펙이 변경되지 않는다.
+- 컬렉션을 외부 클래스로 감싸서, 향후 필요한 필드를 추가할 수 있다.
+
+</div>
+</details>
+
 ---
+
 
