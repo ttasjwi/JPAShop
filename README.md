@@ -566,3 +566,30 @@ class OrderServiceTest {
 - member, item이 필요한 상황인데, 이들 엔티티 조회는 영속성 컨텍스트 관리 하에서 하는 것이 좋다.
 
 ---
+
+# 회원 웹 API 개발
+
+## 회원 등록 API
+
+### 회원 등록 V1
+```java
+
+    @PostMapping("/api/v1/members")
+    public CreateMemberResponse saveMemberV1(@RequestBody @Valid Member member) {
+        Long memberId = memberService.join(member);
+        return new CreateMemberResponse(memberId);
+    }
+
+    @Data
+    static class CreateMemberResponse {
+        private Long id;
+
+        public CreateMemberResponse(Long id) {
+            this.id = id;
+        }
+    }
+```
+- 파라미터에 엔티티가 바로 존재
+- 이후 엔티티가 변경되면 요청 api 사양이 계속 변하는 문제 발생
+
+---
