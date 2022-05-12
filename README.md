@@ -592,4 +592,32 @@ class OrderServiceTest {
 - 파라미터에 엔티티가 바로 존재
 - 이후 엔티티가 변경되면 요청 api 사양이 계속 변하는 문제 발생
 
+### 회원등록 V2
+```java
+@PostMapping("/api/v2/members")
+public CreateMemberResponse saveMemberV2(@RequestBody @Valid CreateMemberRequest request) {
+        Member member = request.toEntity();
+        Long memberId = memberService.join(member);
+        return new CreateMemberResponse(memberId);
+        }
+
+@Data
+static class CreateMemberRequest {
+  @NotEmpty
+  private String name;
+  private String city;
+  private String street;
+  private String zipcode;
+
+  public Member toEntity() {
+    Member member = new Member();
+    member.setName(name);
+    member.setAddress(new Address(city,street, zipcode));
+    return member;
+  }
+}
+```
+- 요청 API를 바인딩할 클래스를 별도로 정의
+- 검증 어노테이션을 요청DTO에
+
 ---
