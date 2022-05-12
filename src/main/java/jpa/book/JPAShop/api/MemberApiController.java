@@ -5,9 +5,7 @@ import jpa.book.JPAShop.domain.Member;
 import jpa.book.JPAShop.service.MemberService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -29,6 +27,17 @@ public class MemberApiController {
         Member member = request.toEntity();
         Long memberId = memberService.join(member);
         return new CreateMemberResponse(memberId);
+    }
+
+    @PutMapping("/api/v2/members/{id}")
+    public UpdateMemberResponse updateMemberV2(
+            @PathVariable Long id,
+            @RequestBody @Valid UpdateMemberRequest request) {
+
+        memberService.update(id, request.getName(), request.getAddress());
+
+        Member updatedMember = memberService.findOne(id);
+        return new UpdateMemberResponse(updatedMember);
     }
 
     @Data
@@ -53,6 +62,37 @@ public class MemberApiController {
 
         public CreateMemberResponse(Long id) {
             this.id = id;
+        }
+    }
+
+    @Data
+    static class UpdateMemberRequest {
+        @NotEmpty
+        private String name;
+        private String city;
+        private String street;
+        private String zipcode;
+
+        public Address getAddress() {
+            return new Address(city, street, zipcode);
+        }
+    }
+
+    @Data
+    static class UpdateMemberResponse {
+
+        private Long id;
+        private String name;
+        private String city;
+        private String street;
+        private String zipcode;
+
+        public UpdateMemberResponse(Member updatedMember) {
+            this.id = updatedMember.getId();
+            this.name = updatedMember.getName();
+            this.city = updatedMember.getAddress().getCity();
+            this.street = updatedMember.getAddress().getStreet();
+            this.zipcode = updatedMember.getAddress().getZipcode();
         }
     }
 

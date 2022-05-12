@@ -570,6 +570,9 @@ class OrderServiceTest {
 # 회원 웹 API 개발
 
 ## 회원 등록 API
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
 
 ### 회원 등록 V1
 ```java
@@ -619,5 +622,26 @@ static class CreateMemberRequest {
 ```
 - 요청 API를 바인딩할 클래스를 별도로 정의
 - 검증 어노테이션을 요청DTO에
+
+</div>
+</details>
+
+## 회원 수정 API
+```java
+@PutMapping("/api/v2/members/{id}")
+public UpdateMemberResponse updateMemberV2(
+        @PathVariable Long id,
+        @RequestBody @Valid UpdateMemberRequest request) {
+
+    memberService.update(id, request.getName(), request.getAddress());
+
+    Member updatedMember = memberService.findOne(id);
+    return new UpdateMemberResponse(updatedMember);
+}
+```
+- 쿼리와 커맨드를 분리하라.
+  - 변경 결과 엔티티를 반환하는 행위는 커맨드, 쿼리의 역할을 동시에 수행하는 상황임
+  - 하나의 메서드는 하나의 역할만.
+- 위의 경우에서도, update메서드는 변경만 수행함. 엔티티를 반환하지 않음.
 
 ---

@@ -1,5 +1,6 @@
 package jpa.book.JPAShop.service;
 
+import jpa.book.JPAShop.domain.Address;
 import jpa.book.JPAShop.domain.Member;
 import jpa.book.JPAShop.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class MemberService {
     /**
      * 회원 가입
      */
-    @Transactional // 변경
+    @Transactional // 삽입
     public Long join(Member member) {
         validateDuplicateMember(member);
         memberRepository.save(member);
@@ -47,4 +48,10 @@ public class MemberService {
         return memberRepository.findAll();
     }
 
+    @Transactional
+    public void update(Long memberId, String updateName, Address updateAddress) {
+        Member member = memberRepository.findOne(memberId);
+        member.setName(updateName);
+        member.setAddress(updateAddress);
+    }
 }
