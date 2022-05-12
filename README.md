@@ -710,6 +710,10 @@ public class MemberListResponse {
 # 간단한 주문 조회 웹 API 개발
 
 ## 간단한 주문조회 V1 : 엔티티를 직접 노출
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
 ```groovy
 implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5'
 ```
@@ -756,5 +760,58 @@ public List<Order> ordersV1() {
 - 만약 즉시로딩(EAGER) 설정까지 사용할 경우 다른 곳에서도 불필요하게 즉시로딩됨.
 - 성능 튜닝이 매우 어려워진다.
 - 따라서, 항상 지연로딩을 기본으로 하고, 성능 최적화가 필요할 경우에는 페치조인(Fetch Join)을 사용하자.
+
+</div>
+</details>
+
+## 간단한 주문 조회 V2 : 엔티티를 DTO로 반환
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+### SimpleOrderListResponse : 간단한 주문 목록 응답
+```java
+@RequiredArgsConstructor
+@Data
+public class SimpleOrderListResponse {
+
+    private final List<SimpleOrderListElement> orders;
+
+    public static SimpleOrderListResponse create(List<Order> orderEntities) {
+        List<SimpleOrderListElement> orders = orderEntities.stream()
+                .map(SimpleOrderListElement::new)
+                .collect(Collectors.toList());
+        return new SimpleOrderListResponse(orders);
+    }
+
+    @Data
+    static class SimpleOrderListElement {
+
+        private Long orderId;
+        private String customerName;
+        private LocalDateTime orderDate;
+        private OrderStatus orderStatus;
+        private Address address;
+```
+- Order 엔티티를 `OrderListElement`로 변환, 이들의 리스트를 기반으로 `SimpleOrderListResponse`를 생성
+```java
+    @GetMapping("/api/v2/simple-orders")
+    public SimpleOrderListResponse ordersV2() {
+        List<Order> orderEntities = orderRepository.findAllByString(new OrderSearch());
+        return SimpleOrderListResponse.create(orderEntities);
+    }
+```
+- 응답 객체를 생성하여 반환
+
+### V2 - 한계
+- 쿼리가 총 1 + N + N번 실행됨(v1과 쿼리 수가 같다.)
+  - order 조회 한 번
+  - order -> Member 조회 N번
+  - order -> Delivery 조회 N번
+  - 예) order 결과가 4개면 최악의 경우 1+4+4번 실행됨(최악의 경우)
+    - 지연로딩은 영속성 컨텍스트에서 조회하므로, 이미 조회된 경우 쿼리를 생략함
+
+</div>
+</details>
 
 ---

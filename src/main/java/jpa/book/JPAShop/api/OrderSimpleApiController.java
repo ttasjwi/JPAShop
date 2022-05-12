@@ -1,5 +1,6 @@
 package jpa.book.JPAShop.api;
 
+import jpa.book.JPAShop.api.dto.SimpleOrderListResponse;
 import jpa.book.JPAShop.domain.Order;
 import jpa.book.JPAShop.domain.OrderSearch;
 import jpa.book.JPAShop.repository.OrderRepository;
@@ -31,6 +32,12 @@ public class OrderSimpleApiController {
         }
 
         return all;
+    }
+
+    @GetMapping("/api/v2/simple-orders")
+    public SimpleOrderListResponse ordersV2() {
+        List<Order> orderEntities = orderRepository.findAllByString(new OrderSearch());
+        return SimpleOrderListResponse.create(orderEntities);
     }
 
 }
