@@ -707,4 +707,54 @@ public class MemberListResponse {
 
 ---
 
+# 간단한 주문 조회 웹 API 개발
 
+## 간단한 주문조회 V1 : 엔티티를 직접 노출
+```groovy
+implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5'
+```
+```java
+@SpringBootApplication
+public class JpaShopApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(JpaShopApplication.class, args);
+	}
+
+	@Bean
+	Hibernate5Module hibernate5Module() {
+		Hibernate5Module hibernate5Module = new Hibernate5Module();
+
+//		// 강제 지연로딩 설정
+//		hibernate5Module.configure(Hibernate5Module.Feature.FORCE_LAZY_LOADING, true);
+		return hibernate5Module;
+	}
+
+}
+```
+- 강제 지연로딩을 목적으로 하이버네이트 모듈 사용
+- Hibernate5Module 빈 등록
+  - configure에서 FORCE_LAZY_LOADING 을 true로 설정하면, json 생성시 모든 프로퍼티를 강제 지연로딩시킴
+  - 이때 반대편에서 호출하는 것을 막기 위해, 반대편 연관관계쪽에 `@JsonIgnore`를 달아야함
+```java
+@GetMapping("/api/v1/simple-orders")
+public List<Order> ordersV1() {
+    List<Order> all = orderRepository.findAllByString(new OrderSearch());
+    for (Order order : all) {
+        order.getMember().getName(); // Lazy 강제 초기화
+        order.getDelivery().getStatus(); // Lazy 강제 초기화
+    }
+
+    return all;
+}
+```
+- Member, Delivery 정보를 응답으로 보내기 위해, 메서드 호출하여 강제 지연로딩시킴.
+
+### V1 문제점
+- 엔티티를 직접 응답으로 외부 노출하므로, 엔티티 변경 시 API가 변경됨
+- 엔티티에서 `@JsonIgnore` 설정을 건들게 되므로 다른 사용처에서도 영향
+- 만약 즉시로딩(EAGER) 설정까지 사용할 경우 다른 곳에서도 불필요하게 즉시로딩됨.
+- 성능 튜닝이 매우 어려워진다.
+- 따라서, 항상 지연로딩을 기본으로 하고, 성능 최적화가 필요할 경우에는 페치조인(Fetch Join)을 사용하자.
+
+---
