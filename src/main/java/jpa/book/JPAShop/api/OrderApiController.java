@@ -31,7 +31,13 @@ public class OrderApiController {
 
     @GetMapping("/api/v2/orders")
     public OrderDTOs ordersV2() {
-        List<Order> all = orderRepository.findAllByString(new OrderSearch());
-        return OrderDTOs.create(all);
+        List<Order> orderEntities = orderRepository.findAllByString(new OrderSearch());
+        return OrderDTOs.create(orderEntities);
+    }
+
+    @GetMapping("/api/v3/orders")
+    public OrderDTOs orderV3() {
+        List<Order> orderEntities = orderRepository.findAllWithItem();
+        return OrderDTOs.create(orderEntities);
     }
 }

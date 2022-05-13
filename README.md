@@ -1007,5 +1007,24 @@ public class OrderDTOs {
 </div>
 </details>
 
+## 주문 조회 V3 : 페치조인 최적화
+```java
+public List<Order> findAllWithItem() {
+    return em.createQuery(
+            "SELECT distinct o FROM Order as o " +
+                    "join fetch o.member as m " +
+                    "join fetch o.delivery as d " +
+                    "join fetch o.orderItems as oi " +
+                    "join fetch oi.item as i ", Order.class)
+            .getResultList();
+}
+
+```
+- join fetch로 컬렉션을 페치조인. SQL 한 번만 실행됨
+- 주의점 : 일대다 조인 결과 row의 갯수가 뻥튀기됨. 식별자 기준으로 중복 제거 가능
+- 한계
+  - 페이징 불가능 : 하이버네이트는 경고 로그를 남기면서 모든 데이터를 DB에서 찾아오고 메모리에서 페치조인 해버림.(매우 위험함)
+  - 여러개의 일대다 관계를 페치 조인하면 데이터가 부정합하게 조회될 수 있음
+
 ---
 
