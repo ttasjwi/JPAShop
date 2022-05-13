@@ -1,5 +1,6 @@
 package jpa.book.JPAShop.repository;
 
+import jpa.book.JPAShop.api.dto.SimpleOrderQueryDto;
 import jpa.book.JPAShop.domain.Member;
 import jpa.book.JPAShop.domain.Order;
 import jpa.book.JPAShop.domain.OrderSearch;
@@ -102,4 +103,6 @@ public class OrderRepository {
                 )
                 .getResultList();
     }
+
+
 }

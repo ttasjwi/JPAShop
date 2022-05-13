@@ -836,4 +836,69 @@ public List<Order> findAllWithMemberDelivery() {
 </div>
 </details>
 
+## 간단한 주문 조회 V4 : API 명세에 맞는 데이터만 별도의 DTO로 가져오기
+
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+### SimpleOrderQueryDto
+```java
+@Data
+public class SimpleOrderQueryDto {
+
+    private Long orderId;
+    private String customerName;
+    private LocalDateTime orderDate;
+    private OrderStatus orderStatus;
+    private Address address;
+
+    public SimpleOrderQueryDto(Long orderId, String customerName, LocalDateTime orderDate, OrderStatus orderStatus, Address address) {
+        this.orderId = orderId;
+        this.customerName = customerName;
+        this.orderDate = orderDate;
+        this.orderStatus = orderStatus;
+        this.address = address;
+    }
+}
+```
+- 쿼리로 가져온 결과를 바인딩할 DTO 생성
+
+### SimpleOrderQueryRepository
+```java
+@Repository
+@RequiredArgsConstructor
+public class SimpleOrderQueryRepository {
+
+    private final EntityManager em;
+    public List<SimpleOrderQueryDto> findOrderDtos() {
+        return em.createQuery(
+                        "SELECT " +
+                                "new jpa.book.JPAShop.api.dto.SimpleOrderQueryDto(o.id, m.name, o.orderDate, o.status, d.address) " +
+                                "from Order as o join o.member as m join o.delivery d", SimpleOrderQueryDto.class)
+                .getResultList();
+    }
+}
+```
+
+- 일반 SQL을 사용할 때처럼, 원하는 값을 선택해서 조회
+- SELECT 절에서 원하는 데이터를 직접 선택하므로 데이터베이스 - 애플리케이션 네트워크 용량 최적화(생각보다 그렇게 효과가 크지는 않음)
+- Repository 재사용성이 떨어진다. 단순히 API 스펙에 맞춘 코드가 Repository에 들어가게 됨.
+  - 해결책 : 엔티티를 조회하는 Repository와, API로 전달할 DTO를 조회하는 로직을 별도로 분리
+- 재사용성이 많아진다면 엔티티로 조회하는게 더 나은 선택일 수 있다.
+- 하지만 한 건 한 건에 담긴 데이터가 많을 경우 성능 최적화를 위해 DTO로 조회하는걸 고려해볼 필요가 있다. 중요한건 성능 테스트!
+
+### 결론
+엔티티를 DTO로 변환하거나, DTO로 바로 변환하는 방법 두가지 모두 장단점이 존재.
+- 엔티티로 조회 : Repository 재사용성 증가, 개발 단순화
+- DTO로 조회 : 엔티티로 조회하는 것의 성능 이슈가 있을 경우, 필요한 데이터만 가져오므로 성능 최적화
+- 쿼리 방식 선택 권장 순서
+  1. 우선 엔티티를 조회해오고, DTO로 변환하는 방법을 선택
+  2. 필요하면 페치 조인으로 성능을 최적화 -> 여기까지 하면 대부분 성능 이슈가 해결
+  3. 그래도 안 되면 DTO로 직접 조회하는 방법 사용
+  4. 최후의 보루 : JPA가 제공하는 NativeSQL 또는, 스프링 JDBC Template을 사용하여 SQL 직접 사용
+
+</div>
+</details>
+
 ---

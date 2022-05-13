@@ -1,9 +1,11 @@
 package jpa.book.JPAShop.api;
 
 import jpa.book.JPAShop.api.dto.SimpleOrderListResponse;
+import jpa.book.JPAShop.api.dto.SimpleOrderQueryDto;
 import jpa.book.JPAShop.domain.Order;
 import jpa.book.JPAShop.domain.OrderSearch;
 import jpa.book.JPAShop.repository.OrderRepository;
+import jpa.book.JPAShop.repository.order.simplequery.SimpleOrderQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +24,7 @@ import java.util.List;
 public class OrderSimpleApiController {
 
     private final OrderRepository orderRepository;
+    private final SimpleOrderQueryRepository simpleOrderQueryRepository;
 
     @GetMapping("/api/v1/simple-orders")
     public List<Order> ordersV1() {
@@ -46,5 +49,9 @@ public class OrderSimpleApiController {
         return SimpleOrderListResponse.create(orderEntities);
     }
 
+    @GetMapping("/api/v4/simple-orders")
+    public List<SimpleOrderQueryDto> orderV4() {
+        return simpleOrderQueryRepository.findOrderDtos();
+    }
 
 }
