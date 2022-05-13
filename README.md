@@ -1008,6 +1008,10 @@ public class OrderDTOs {
 </details>
 
 ## 주문 조회 V3 : 페치조인 최적화
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
 ```java
 public List<Order> findAllWithItem() {
     return em.createQuery(
@@ -1025,6 +1029,65 @@ public List<Order> findAllWithItem() {
 - 한계
   - 페이징 불가능 : 하이버네이트는 경고 로그를 남기면서 모든 데이터를 DB에서 찾아오고 메모리에서 페치조인 해버림.(매우 위험함)
   - 여러개의 일대다 관계를 페치 조인하면 데이터가 부정합하게 조회될 수 있음
+
+</div>
+</details>
+
+## 주문 조회 V3.1 : 페이징과 한계 돌파
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+### 페이징과 한계 돌파
+- 컬렉션의 페치 조인 시, 페이징 불가능
+  - 일대다조인 -> row 뻥튀기
+  - 페이징을 시도할 경우 하이버네이트는 메모리에 모든 데이터를 가져와서 페이징 시도 -> 장애 발생 가능성
+
+```java
+    public List<Order> findAllWithMemberDelivery(int offset, int limit) {
+        return em.createQuery(
+                        "SELECT o FROM Order as o " +
+                                "join fetch o.member as m " +
+                                "join fetch o.delivery as d", Order.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+```
+```yaml
+spring:
+  jpa:
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+```
+### 한계돌파
+- 페이징 + 컬렉션 엔티티 함께 조회 방법
+  - ToOne(ManyToOne, OneToOne)은 페치 조인
+  - 컬렉션은 지연로딩으로 조회.
+  - 지연로딩 성능 최적화를 위해 `spring.jpa.properties.hibernate.default_batch_fetch_size` 적용
+    - 개별 최적화 : 일부 구간에만 적용하고 싶을 때는 `@BatchSize` 사용
+    - 이 옵션은 컬렉션이나 프록시 객체를 조회 시 한번에 설정한 size만큼 IN 절로 식별자를 넣어 조회
+
+### 지연로딩 최적화 시의 장점
+- 장점 : 쿼리 호출 수가 N+1에서 1+1로 최적화
+  - 1:m:n 호출을 1+1+1 쿼리로 조회
+  - 조인보다 DB 데이터 전송량이 최적화
+    - 잘 정규화된 테이블이면 정규화해서 필요한 최소한의 데이터들만 가져온다.
+    - Order와 OrderItem을 조인해서 조회하면 Order의 데이터가 OrderItem 갯수만큼 중복해서 조회되는데 지연로딩 방식을 사용하면, 각각 조회되므로 전송 중복데이터가 없어진다.
+  - 페치 조인 방식과 비교했을 때, 쿼리 호출 수가 약간 증가하지만 DB 데이터 전송량이 감소
+  - 컬렉션 페치 조인은 페이징이 불가능하지만, 이 방법은 페이징이 가능하다.
+
+### 결론
+- `@...TOOne`은 페이징에 영향을 주지 않으므로 페치 조인으로 쿼리 수를 줄이면 됨
+- 나머지는 batchSize 조절을 통해 최적화
+  - `default_batch_fetch_size`는 100~1000 사이 선택 권장.
+    - 많이 잡을 경우 DB측 순간 부하 증가 가능성이 있음.
+    - 애플리케이션단에서는 100이든 1000이든 결국 전체 데이터를 로딩해야하므로 메모리 사용량이 같다.
+    - 1000으로 설정하는 것이 가장 성능상 좋지만, 결국 DB든 애플리케이션이든 순간 부하를 어느 정도까지 버틸 수 있을 지 성능 테스트를 거쳐서 결정하는 것이 좋음.
+
+</div>
+</details>
 
 ---
 

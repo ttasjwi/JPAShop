@@ -12,6 +12,7 @@ spring:
       hibernate:
 #        show_sql: true # sout으로 하이버네이트 실행 SQL을 남기는 것인데, 후술할 logging으로 대체한다.
         format_sql: true # 보여지는 쿼리를 예쁘게 보여줌
+        default_batch_fetch_size: 100
 
 logging:
   level:

@@ -104,13 +104,23 @@ public class OrderRepository {
                 .getResultList();
     }
 
+    public List<Order> findAllWithMemberDelivery(int offset, int limit) {
+        return em.createQuery(
+                        "SELECT o FROM Order as o " +
+                                "join fetch o.member as m " +
+                                "join fetch o.delivery as d", Order.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
     public List<Order> findAllWithItem() {
         return em.createQuery(
-                "SELECT distinct o FROM Order as o " +
-                        "join fetch o.member as m " +
-                        "join fetch o.delivery as d " +
-                        "join fetch o.orderItems as oi " +
-                        "join fetch oi.item as i ", Order.class)
+                        "SELECT distinct o FROM Order as o " +
+                                "join fetch o.member as m " +
+                                "join fetch o.delivery as d " +
+                                "join fetch o.orderItems as oi " +
+                                "join fetch oi.item as i ", Order.class)
                 .getResultList();
     }
 
