@@ -902,3 +902,33 @@ public class SimpleOrderQueryRepository {
 </details>
 
 ---
+
+# 주문 조회 웹 API 개발 - 컬렉션 조회
+
+## 주문 조회 V1 : 엔티티 직접 노출
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+```java
+@GetMapping("/api/v1/orders")
+public List<Order> ordersV1() {
+    List<Order> all = orderRepository.findAllByString(new OrderSearch());
+    for (Order order : all) {
+        order.getMember().getName();
+        order.getDelivery().getStatus();
+        List<OrderItem> orderItems = order.getOrderItems();
+        orderItems.stream().forEach(o->o.getItem().getName());
+    }
+    return all;
+}
+```
+- order 엔티티를 직접 조회
+- 지연로딩 엔티티 직접 호출하여, 강제 로딩
+- 엔티티를 직접 노출하므로 좋은 방법이 아니다.
+
+</div>
+</details>
+
+---
+
