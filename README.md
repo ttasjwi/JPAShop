@@ -930,5 +930,82 @@ public List<Order> ordersV1() {
 </div>
 </details>
 
+## 주문 조회 V2 : 엔티티를 DTO로 변환
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+```java
+@Data
+@RequiredArgsConstructor
+public class OrderDTOs {
+
+  private final List<OrderDTO> orders;
+
+  public static OrderDTOs create(List<Order> orderEntities) {
+    List<OrderDTO> orders = orderEntities.stream()
+            .map(OrderDTO::new)
+            .collect(Collectors.toList());
+
+    return new OrderDTOs(orders);
+  }
+
+  @Data
+  static class OrderDTO {
+
+    private Long orderId;
+    private String customerName;
+    private LocalDateTime orderDate;
+    private OrderStatus orderStatus;
+    private Address address;
+    private List<OrderItemDTO> orderItems;
+
+    public OrderDTO(Order orderEntity) {
+      orderId = orderEntity.getId();
+      customerName = orderEntity.getMember().getName();
+      orderDate = orderEntity.getOrderDate();
+      orderStatus = orderEntity.getStatus();
+      address = orderEntity.getDelivery().getAddress();
+      orderItems = initOrderItems(orderEntity.getOrderItems());
+    }
+
+    private List<OrderItemDTO> initOrderItems(List<OrderItem> orderItems) {
+      return orderItems.stream()
+              .map(OrderItemDTO::new)
+              .collect(Collectors.toList());
+    }
+
+    @Data
+    static class OrderItemDTO {
+
+      private String itemName;
+      private int orderPrice; // 주문 가격
+      private int count; // 수량1
+
+      public OrderItemDTO(OrderItem orderItem) {
+        itemName = orderItem.getItem().getName();
+        orderPrice = orderItem.getOrderPrice();
+        count = orderItem.getCount();
+      }
+    }
+  }
+}
+```
+- 엔티티를 DTO로 변환
+- DTO 내부에 엔티티를 그대로 넘겨선 안 된다. 내부 엔티티도 새로운 DTO로 만들어야한다.
+
+### 성능 상의 문제점
+- 지연 로딩으로 너무 많은 SQL 실행
+- SQL 실행수(최악의 경우)
+  - order : 1번
+  - member : N번(order 조회 수만큼)
+  - delivery.address : N번(delivery 조회 수 만큼)
+  - orderItem : N번(order 조회수 만큼)
+  - item : N번(order 조회수 만큼)
+- 이미 조회된 엔티티가 영속성 컨텍스트에 있을 경우 엔티티를 사용, 없으면 SQL 날림
+
+</div>
+</details>
+
 ---
 

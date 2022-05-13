@@ -28,4 +28,10 @@ public class OrderApiController {
         }
         return all;
     }
+
+    @GetMapping("/api/v2/orders")
+    public OrderDTOs ordersV2() {
+        List<Order> all = orderRepository.findAllByString(new OrderSearch());
+        return OrderDTOs.create(all);
+    }
 }
