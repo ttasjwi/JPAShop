@@ -7,6 +7,7 @@ import javax.persistence.Embeddable;
 
 @Embeddable
 @Getter // 값 타입은 Setter를 두면 안 됨.
+@EqualsAndHashCode
 public class Address {
 
     private String city;

@@ -1,5 +1,6 @@
 package jpa.book.JPAShop.repository.order.query;
 
+import jpa.book.JPAShop.api.dto.OrderFlatDTO;
 import jpa.book.JPAShop.api.dto.OrderItemQueryDTO;
 import jpa.book.JPAShop.api.dto.OrderQueryDTO;
 import jpa.book.JPAShop.api.dto.OrderQueryDTOs;
@@ -74,4 +75,16 @@ public class OrderQueryRepository {
                 .getResultList();
     }
 
+    public List<OrderFlatDTO> findOrderQueryDTOs_flat() {
+        return em.createQuery(
+                "SELECT " +
+                        "new jpa.book.JPAShop.api.dto.OrderFlatDTO" +
+                        "(o.id, m.name, o.orderDate, o.status, d.address, i.name, oi.orderPrice, oi.count) " +
+                        "FROM Order as o " +
+                        "JOIN o.member as m " +
+                        "JOIN o.delivery as d " +
+                        "JOIN o.orderItems as oi " +
+                        "JOIN oi.item as i", OrderFlatDTO.class)
+                .getResultList();
+    }
 }

@@ -1201,4 +1201,60 @@ findOrders.forEach(o -> o.setOrderItems(orderItemMap.get(o.getOrderId())));
 </div>
 </details>
 
+## 주문 조회 V6 : JPA에서 DTO로 직접 조회, 플랫 데이터 최적화
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+### flat 데이터 조회
+```java
+public List<OrderFlatDTO> findOrderQueryDTOs_flat() {
+    return em.createQuery(
+            "SELECT " +
+                    "new jpa.book.JPAShop.api.dto.OrderFlatDTO" +
+                    "(o.id, m.name, o.orderDate, o.status, d.address, i.name, oi.orderPrice, oi.count) " +
+                    "FROM Order as o " +
+                    "JOIN o.member as m " +
+                    "JOIN o.delivery as d " +
+                    "JOIN o.orderItems as oi " +
+                    "JOIN oi.item as i", OrderFlatDTO.class)
+            .getResultList();
+}
+```
+- 한 방 쿼리로, 1:多 관계를 싹 List로 가져옴
+### 그룹핑, 병합
+```java
+@GetMapping("/api/v6/orders")
+public OrderQueryDTOs ordersV6() {
+    List<OrderFlatDTO> flats = orderQueryRepository.findOrderQueryDTOs_flat();
+
+    List<OrderQueryDTO> orders = flats.stream()
+            .collect(
+                    // 그룹핑 : 각각의 OrderQueryDTO를 기준으로 그룹핑
+                    groupingBy(flat -> new OrderQueryDTO(flat.getOrderId(), flat.getCustomerName(), flat.getOrderDate(), flat.getOrderStatus(), flat.getAddress()),
+
+                    // 수집대상 : OrderItemQueryDTO들을 List로 수집
+                    mapping(flat -> new OrderItemQueryDTO(flat.getOrderId(), flat.getItemName(), flat.getOrderPrice(), flat.getCount()), toList())
+            )).entrySet()
+            .stream()
+            .map(
+                    // OrderQueryDTO에 List<OrderItemQueryDTO>를 추가한 OrderQueryDTO 생성
+                    entry -> new OrderQueryDTO(entry.getKey().getOrderId(), entry.getKey().getCustomerName(), entry.getKey().getOrderDate(), entry.getKey().getOrderStatus(), entry.getKey().getAddress(), entry.getValue()))
+            .collect(toList());
+    return new OrderQueryDTOs(orders);
+}
+```
+- 컬렉션을 제외한 필드들을 그룹핑 기준으로 삼고, 각각의 OrderItem들을 List로 수집
+- 수집한 결과를 병합하는 별도의 코드를 작성
+
+### 성능
+- Query : 1번
+- 단점
+  - 쿼리는 한 번이지만, 1:多 조인으로 인해 DB에서 애플리케이션에 전달하는 데이터에 중복데이터가 추가되므로 상황에 따라 V5보다 느릴 수 있음
+  - 애플리케이션단에서 그룹핑, 병합하는 추가 작업이 크다.
+  - 페이징 불가(DB에서 가져올 때 뻥튀기 된 row로 가져오기 때문)
+
+</div>
+</details>
+
 ---

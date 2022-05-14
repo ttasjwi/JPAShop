@@ -1,8 +1,7 @@
 package jpa.book.JPAShop.api;
 
 
-import jpa.book.JPAShop.api.dto.OrderDTOs;
-import jpa.book.JPAShop.api.dto.OrderQueryDTOs;
+import jpa.book.JPAShop.api.dto.*;
 import jpa.book.JPAShop.domain.Order;
 import jpa.book.JPAShop.domain.OrderItem;
 import jpa.book.JPAShop.domain.OrderSearch;
@@ -14,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -64,5 +66,25 @@ public class OrderApiController {
     @GetMapping("/api/v5/orders")
     public OrderQueryDTOs ordersV5() {
         return orderQueryRepository.findOrderQueryDTOs_Optimization();
+    }
+
+    @GetMapping("/api/v6/orders")
+    public OrderQueryDTOs ordersV6() {
+        List<OrderFlatDTO> flats = orderQueryRepository.findOrderQueryDTOs_flat();
+
+        List<OrderQueryDTO> orders = flats.stream()
+                .collect(
+                        // 그룹핑 : 각각의 OrderQueryDTO를 기준으로 그룹핑
+                        groupingBy(flat -> new OrderQueryDTO(flat.getOrderId(), flat.getCustomerName(), flat.getOrderDate(), flat.getOrderStatus(), flat.getAddress()),
+
+                        // 수집대상 : OrderItemQueryDTO들을 List로 수집
+                        mapping(flat -> new OrderItemQueryDTO(flat.getOrderId(), flat.getItemName(), flat.getOrderPrice(), flat.getCount()), toList())
+                )).entrySet()
+                .stream()
+                .map(
+                        // OrderQueryDTO에 List<OrderItemQueryDTO>를 추가한 OrderQueryDTO 생성
+                        entry -> new OrderQueryDTO(entry.getKey().getOrderId(), entry.getKey().getCustomerName(), entry.getKey().getOrderDate(), entry.getKey().getOrderStatus(), entry.getKey().getAddress(), entry.getValue()))
+                .collect(toList());
+        return new OrderQueryDTOs(orders);
     }
 }
