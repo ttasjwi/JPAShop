@@ -1138,4 +1138,67 @@ public class OrderQueryRepository {
 </div>
 </details>
 
+## 주문 조회 V5 : JPA에서 DTO 직접 조회 - 컬렉션 조회 최적화
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
+
+### 흐름
+```java
+    public OrderQueryDTOs findOrderQueryDTOs_Optimization() {
+        List<OrderQueryDTO> findOrders = findOrders();
+        
+        List<Long> orderIds = toOrderIds(findOrders);
+        Map<Long, List<OrderItemQueryDTO>> orderItemMap = findOrderItemMap(orderIds);
+
+        findOrders.forEach(o -> o.setOrderItems(orderItemMap.get(o.getOrderId())));
+        return new OrderQueryDTOs(findOrders);
+    }
+```
+- toOrderIds : 조회된 주문들의 id 리스트
+- orderItemMap : 각 id별 OrderItemQueryDTO
+- forEach로, orderItemMap의 id에 해당하는 orderItems를 order에 set
+
+### toOrderIds
+```java
+    private List<Long> toOrderIds(List<OrderQueryDTO> orderDTOs) {
+        return orderDTOs.stream()
+                .map(OrderQueryDTO::getOrderId)
+                .collect(toList());
+    }
+```
+- orderDTO 리스트를 탐색하여, id들의 List를 반환
+
+### findOrderItemMap
+```java
+    private Map<Long, List<OrderItemQueryDTO>> findOrderItemMap(List<Long> orderIds) {
+        return em.createQuery(
+                        "SELECT " +
+                                "new jpa.book.JPAShop.api.dto.OrderItemQueryDTO(oi.order.id, i.name, oi.orderPrice, oi.count) "+
+                                "FROM OrderItem as oi " +
+                                "JOIN oi.item as i " +
+                                "WHERE oi.order.id in :orderIds", OrderItemQueryDTO.class)
+                .setParameter("orderIds", orderIds)
+                .getResultStream()
+                .collect(groupingBy(OrderItemQueryDTO::getOrderId));
+    }
+```
+- orderIds를 in절에 파라미터로 추가. 지정 리스트에 포함된 id들 중 같은 id값을 가진 것들만 조회
+- 별도의 DTO로 OrderItemQueryDTO들 조회
+- orderId를 구분 기준으로 하여, 그룹핑
+
+### 최종연산
+```java
+findOrders.forEach(o -> o.setOrderItems(orderItemMap.get(o.getOrderId())));
+```
+- orderItemMap에 저장된 리스트를 찾아다 order들 각각에 주입
+
+### 성능
+- Query : 루트 1번, 컬렉션 1번
+- ToOne 관계들을 모두 조회하고, 식별자 orderId들을 기반으로 toMany관계인 OrderItem들을 한번에 조회
+- map을 이용해서 매칭 성능 향상(O(1))
+
+</div>
+</details>
+
 ---
