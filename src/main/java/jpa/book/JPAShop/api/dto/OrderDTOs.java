@@ -1,4 +1,4 @@
-package jpa.book.JPAShop.api;
+package jpa.book.JPAShop.api.dto;
 
 import jpa.book.JPAShop.domain.Address;
 import jpa.book.JPAShop.domain.Order;
