@@ -1089,5 +1089,53 @@ spring:
 </div>
 </details>
 
----
+## 주문 조회 V4 : JPA에서 DTO 직접 조회
+<details>
+<summary>접기/펼치기 버튼</summary>
+<div markdown="1">
 
+```java
+@RequiredArgsConstructor
+public class OrderQueryRepository {
+
+    private final EntityManager em;
+
+    public OrderQueryDTOs findOrderQueryDTOs() {
+        List<OrderQueryDTO> findOrders = findOrders();
+        findOrders.forEach(o-> o.setOrderItems(findOrderItems(o.getOrderId())));
+        return new OrderQueryDTOs(findOrders);
+    }
+
+    private List<OrderQueryDTO> findOrders() {
+        return em.createQuery(
+                        "SELECT " +
+                                "new jpa.book.JPAShop.api.dto.OrderQueryDTO(o.id, m.name, o.orderDate, o.status, d.address) " +
+                                "FROM Order as o " +
+                                "join o.member as m " +
+                                "join o.delivery as d", OrderQueryDTO.class)
+                .getResultList();
+    }
+
+    private List<OrderItemQueryDTO> findOrderItems(Long orderId) {
+        return em.createQuery(
+                        "SELECT " +
+                                "new jpa.book.JPAShop.api.dto.OrderItemQueryDTO(oi.order.id, i.name, oi.orderPrice, oi.count) "+
+                                "FROM OrderItem as oi " +
+                                "JOIN oi.item as i " +
+                                "WHERE oi.order.id = :orderId", OrderItemQueryDTO.class)
+                .setParameter("orderId", orderId)
+                .getResultList();
+    }
+
+}
+```
+- Query : 루트 1번, 컬렉션 N번 실행 (N+1)
+  - ToOne(N:1, 1:1)관계들을 먼저 조회하고, ToMany(1:N) 관계는 각각 별도로 처리한다.
+    - ToOne 관계 조인은 row 수가 증가하지 않음
+    - ToMany(1:N) 관계는 조인하면 row 수가 증가함
+  - row 수가 증가하지 않는 ToOne 관계는 조인으로 최적화하기 쉬우므로 한 번 조회하고, ToMany 관계는 최적화하기 어려우므로 findOrderItems()와 같은 별도의 메서드로 조회
+
+</div>
+</details>
+
+---

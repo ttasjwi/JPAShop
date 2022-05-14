@@ -2,10 +2,12 @@ package jpa.book.JPAShop.api;
 
 
 import jpa.book.JPAShop.api.dto.OrderDTOs;
+import jpa.book.JPAShop.api.dto.OrderQueryDTOs;
 import jpa.book.JPAShop.domain.Order;
 import jpa.book.JPAShop.domain.OrderItem;
 import jpa.book.JPAShop.domain.OrderSearch;
 import jpa.book.JPAShop.repository.OrderRepository;
+import jpa.book.JPAShop.repository.order.query.OrderQueryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +20,7 @@ import java.util.List;
 public class OrderApiController {
 
     private final OrderRepository orderRepository;
+    private final OrderQueryRepository orderQueryRepository;
 
     @GetMapping("/api/v1/orders")
     public List<Order> ordersV1() {
@@ -51,5 +54,10 @@ public class OrderApiController {
         List<Order> orderEntities = orderRepository.findAllWithMemberDelivery(offset, limit);
         return OrderDTOs.create(orderEntities);
 
+    }
+
+    @GetMapping("/api/v4/orders")
+    public OrderQueryDTOs ordersV4() {
+        return orderQueryRepository.findOrderQueryDTOs();
     }
 }
